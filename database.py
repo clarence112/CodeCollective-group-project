@@ -64,7 +64,7 @@ def regenerate_employee_database() -> None:
 	print(f"Wrote {len(data.keys())} records.")
 
 
-def _get_database(db_path:str = EMP_DB) -> dict[str, list]:
+def get_database(db_path:str = EMP_DB) -> dict[str, list]:
 	f = open(db_path, "r")
 	database = json.loads(f.read())
 	f.close()
@@ -80,7 +80,7 @@ def find_pay(id:int, name_first:str, name_last:str, db_path:str = EMP_DB, test_m
 	name_first = name_first.strip().lower()
 	name_last = name_last.strip().lower()
 	r_id:str = str(id) # For some reason, JSON does not support int dict keys
-	database = _get_database(db_path)
+	database = get_database(db_path)
 	record:tuple[str, str, float] = (str(database[r_id][0]), str(database[r_id][1]), float(database[r_id][2]))
 	if (name_first == record[0]) and (name_last == record[1]):
 		return record[2]
@@ -96,7 +96,7 @@ def find_pay(id:int, name_first:str, name_last:str, db_path:str = EMP_DB, test_m
 def print_database(db_path:str = EMP_DB) -> None:
 	print("Current Employee Payment Database:")
 	print("(Note: you can run database.py with the \"--regen\" argument to create a new database.)")
-	db = _get_database(db_path)
+	db = get_database(db_path)
 	print("|ID  |First Name         |Last Name          |Pay Rate    |")
 	for i in db:
 		print(f"|{i:>4}|{db[i][0]:>18} | {db[i][1]:<18}|{db[i][2]:>12.2f}|")
@@ -111,14 +111,14 @@ def write_csv(filename:str, test_mode:bool = False) -> str:
 		csv_dat += f"\r\n{i},{sd[i][0]},{sd[i][1]},{sd[i][2]},{sd[i][3]},{sd[i][4]:.2f},{sd[i][5]:.2f},{sd[i][6]:.2f},{sd[i][7]:.2f}"
 	if not test_mode:
 		print(csv_dat)
-		f = open(f"{filename}.csv")
+		f = open(f"{filename}.csv", "w")
 		f.write(csv_dat)
 		f.close()
 	return csv_dat
 
 
 # Stores a line of pay info, to be written to disk later.
-# Assumes hours have already been validated
+# Assumes hours and ID have already been validated
 # "db" and "test_mode" arguments should only be used in unit tests.
 def store_session_record(id:int, name_first:str, name_last:str, deps:int, hours:float, db:str = EMP_DB, test_mode:bool = False) -> None:
 	rate:float = find_pay(id, name_first, name_last, db, test_mode)
