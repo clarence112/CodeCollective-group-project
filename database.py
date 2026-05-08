@@ -102,6 +102,15 @@ def print_database(db_path:str = EMP_DB) -> None:
 		print(f"|{i:>4}|{db[i][0]:>18} | {db[i][1]:<18}|{db[i][2]:>12.2f}|")
 
 
+## Outputs the content of the session in a nice format
+def print_session(db_path:str = EMP_DB) -> None:
+	print("Pay information this cycle:")
+	sd = session_data
+	print("|ID  |First Name         |Last Name          |Dependants  |Pay Rate    |Gross Pay   |State Tax   |Federal Tax |Net Pay     |")
+	for i in sd:
+		print(f"|{i:>4}|{sd[i][0]:>18} | {sd[i][1]:<18}|{sd[i][2]:>12}|{sd[i][3]:>12.2f}|{sd[i][4]:>12.2f}|{sd[i][5]:>12.2f}|{sd[i][6]:>12.2f}|{sd[i][7]:>12.2f}|")
+
+
 # Output the spreadsheet to disk (CSV format)
 # "test_mode" argument should only be used in unit tests, as it blocks writing.
 def write_csv(filename:str, test_mode:bool = False) -> str:
@@ -110,7 +119,7 @@ def write_csv(filename:str, test_mode:bool = False) -> str:
 	for i in sd:
 		csv_dat += f"\r\n{i},{sd[i][0]},{sd[i][1]},{sd[i][2]},{sd[i][3]},{sd[i][4]:.2f},{sd[i][5]:.2f},{sd[i][6]:.2f},{sd[i][7]:.2f}"
 	if not test_mode:
-		print(csv_dat)
+		print_session()
 		f = open(f"{filename}.csv", "w")
 		f.write(csv_dat)
 		f.close()
@@ -126,6 +135,7 @@ def store_session_record(id:int, name_first:str, name_last:str, deps:int, hours:
 	state:float = calc.calc_state(gross)
 	fed:float = calc.calc_fed(gross)
 	net:float = calc.calc_net(gross)
+	print(f"{id}, {name_first} {name_last}: Gross: {gross:.2f}, State tax:{state:.2f}, Federal Tax: {fed:.2f}, Net:{net:.2f}")
 	session_data[id] = (name_first, name_last, deps, hours, gross, state, fed, net)
 
 
