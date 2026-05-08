@@ -64,6 +64,15 @@ def regenerate_employee_database() -> None:
 	print(f"Wrote {len(data.keys())} records.")
 
 
+def _get_database(db_path:str = EMP_DB) -> dict[str, list]:
+	f = open(db_path, "r")
+	database = json.loads(f.read())
+	f.close()
+	if not isinstance(database, dict):
+		raise TypeError("Employee database is not a dict!")
+	return database
+
+
 
 # Find the employee's pay from their ID.
 # The db_path and test_mode parameters should only be used for unit tests
@@ -71,13 +80,7 @@ def find_pay(id:int, name_first:str, name_last:str, db_path:str = EMP_DB, test_m
 	name_first = name_first.strip().lower()
 	name_last = name_last.strip().lower()
 	r_id:str = str(id) # For some reason, JSON does not support int dict keys
-	f = open(db_path, "r")
-	database = json.loads(f.read())
-	f.close()
-	if not isinstance(database, dict):
-		raise TypeError("Employee database is not a dict!")
-	if not (r_id in database.keys()):
-		raise ValueError("Invalid employee ID!")
+	database = _get_database(db_path)
 	record:tuple[str, str, float] = (str(database[r_id][0]), str(database[r_id][1]), float(database[r_id][2]))
 	if (name_first == record[0]) and (name_last == record[1]):
 		return record[2]
@@ -89,13 +92,23 @@ def find_pay(id:int, name_first:str, name_last:str, db_path:str = EMP_DB, test_m
 		raise ValueError("Employee name does not match!")
 
 
+## Outputs the content of the employee pay database in a nice format
+def print_database(db_path:str = EMP_DB) -> None:
+	print("Current Employee Payment Database:")
+	print("(Note: you can run database.py with the \"--regen\" argument to create a new database.)")
+	db = _get_database(db_path)
+	print("|ID  |First Name         |Last Name          |Pay Rate    |")
+	for i in db:
+		print(f"|{i:>4}|{db[i][0]:>18} | {db[i][1]:<18}|{db[i][2]:>12.2f}|")
+
+
 # Output the spreadsheet to disk (CSV format)
 # "test_mode" argument should only be used in unit tests, as it blocks writing.
 def write_csv(filename:str, test_mode:bool = False) -> str:
 	csv_dat:str = CSV_HEAD
 	sd = session_data
 	for i in sd:
-		csv_dat += f"\r\n{i},{sd[i][0]},{sd[i][1]},{sd[i][2]},{sd[i][3]},{sd[i][4]},{sd[i][5]},{sd[i][6]},{sd[i][7]}"
+		csv_dat += f"\r\n{i},{sd[i][0]},{sd[i][1]},{sd[i][2]},{sd[i][3]},{sd[i][4]:.2f},{sd[i][5]:.2f},{sd[i][6]:.2f},{sd[i][7]:.2f}"
 	if not test_mode:
 		print(csv_dat)
 		f = open(f"{filename}.csv")
@@ -167,7 +180,7 @@ def _test_6() -> tuple[str, bool]:
 	return ("Session data", session_data == {0: ("test", "person", 0, 10, 10.0, 0.56, 0.79, 8.65)})
 def _test_7() -> tuple[str, bool]:
 	output:str = write_csv("test", True)
-	return ("Validate CSV content", output == "ID,First Name,Last Name,Dependants,Hours,Gross pay,State tax,Fed tax,Net pay\r\n0,test,person,0,10,10.0,0.56,0.79,8.65")
+	return ("Validate CSV content", output == "ID,First Name,Last Name,Dependants,Hours,Gross pay,State tax,Fed tax,Net pay\r\n0,test,person,0,10,10.00,0.56,0.79,8.65")
 
 
 # Stores a list of functions to use as unit tests.
