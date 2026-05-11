@@ -64,6 +64,7 @@ def regenerate_employee_database() -> None:
 	print(f"Wrote {len(data.keys())} records.")
 
 
+# Reads the employee pay rate database from disk
 def get_database(db_path:str = EMP_DB) -> dict[str, list]:
 	f = open(db_path, "r")
 	database = json.loads(f.read())
